@@ -1,38 +1,73 @@
 'use client'
-
 import { useRouter } from 'next/navigation';
-import { getCurrentUser } from '@/utils/authentication'; 
 import { ModeToggle } from '../ui/theme-toggle';
-const Navbar = () => {
- const router = useRouter();
- const user = getCurrentUser(); // Get the current user
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { User } from '@/types/global';
+import { useAuth } from '@/contexts/auth-context';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { LogOut, User as UserIcon, Home } from 'lucide-react';
+
+interface NavbarProps {
+  user: User | null;
+}
+
+export default function Navbar({ user }: NavbarProps) {
+  const router = useRouter();
+  const { logout } = useAuth();
+  const userName = user ? user.name : null;
+  const userAvatar = user ? user.avatar : null;
+
   const handleLogout = () => {
-   // Clear the token cookie
-   document.cookie = 'token=; Max-Age=0; path=/;';
-   // Redirect to login page
-   router.push('/login');
- };
-  const getInitials = (name: string) => {
-   const names = name.split(' ');
-   return names.map(n => n.charAt(0).toUpperCase()).join('');
- };
+    logout();
+    router.push('/login');
+  };
+
   return (
-   <nav className="flex justify-between items-center p-4 bg-white dark:bg-gray-800">
-     <div className="flex items-center">
-       <div className="w-10 h-10 flex items-center justify-center bg-gray-300 rounded-full text-white">
-        
-         {user ? getInitials(user.name) : 'U'}
-        
-       </div>
-       <span className="ml-2 text-lg font-semibold">{user ? user.name : 'Guest'}</span>
-     </div>
-     <div className="flex items-center space-x-4">
-      <ModeToggle/>
-       <button onClick={handleLogout} className="bg-red-500 text-white px-4 py-2 rounded">
-         Logout
-       </button>
-     </div>
-   </nav>
- );
-};
-export default Navbar;
+    <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container flex h-16 items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Home className="h-5 w-5" />
+          <span className="text-lg font-semibold">Social Feed</span>
+        </div>
+        <div className="flex items-center gap-4">
+          <ModeToggle />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="flex items-center gap-3 rounded-full border border-border bg-background px-2 py-1 hover:bg-accent">
+                <span className="hidden text-sm font-medium md:inline-block">
+                  {userName || 'Guest'}
+                </span>
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src={userAvatar || '/default-avatar.png'} alt={userName || 'User Avatar'} />
+                  <AvatarFallback>{userName ? userName[0].toUpperCase() : 'U'}</AvatarFallback>
+                </Avatar>
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="cursor-pointer">
+                <UserIcon className="mr-2 h-4 w-4" />
+                Profile
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                className="cursor-pointer text-destructive focus:text-destructive" 
+                onClick={handleLogout}
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                Logout
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </div>
+    </nav>
+  );
+}

@@ -1,23 +1,24 @@
 'use client'
 
-// import { useActionState } from 'react-dom';
-import { z } from 'zod';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useRouter } from 'next/navigation'; // Ensure you have this package installed // Adjust the import based on your project structure
+import { z } from 'zod';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter, CardDescription } from '../ui/card';
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
 import { Form, FormField, FormItem, FormControl, FormMessage, FormLabel } from '../ui/form';
-import { Eye, EyeOff } from 'lucide-react'; // Ensure you have these icons available
-import { useToast } from '@/hooks/use-toast'; // Adjust the import based on your project structure
-import { generateToken, register } from '@/utils/authentication'; // Adjust the import based on your project structure
-import { useState } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 import LoaderButton from '../ui/loader-button';
 import Link from 'next/link';
+import { useAuth } from '@/contexts/auth-context';
 
 const signupSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters').max(20, 'Name must be at most 20 characters'),
+  name: z.string()
+    .min(2, 'Name must be at least 2 characters')
+    .max(20, 'Name must be at most 20 characters'),
   email: z.string().email('Invalid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
 });
@@ -26,6 +27,7 @@ type SignupFormSchemaType = z.infer<typeof signupSchema>;
 
 export default function SignupForm() {
   const router = useRouter();
+  const { register, login } = useAuth();
   const { toast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -33,30 +35,41 @@ export default function SignupForm() {
   const formHook = useForm<SignupFormSchemaType>({
     resolver: zodResolver(signupSchema),
     mode: 'onChange',
+    defaultValues: {
+      name: '',
+      email: '',
+      password: '',
+    },
   });
 
   async function handleSignup(values: SignupFormSchemaType) {
     try {
       setLoading(true);
 
-      const newUser = register(values.name, values.email, values.password);
-      if (!newUser) {
+      const success = await register(values.name, values.email, values.password);
+      if (!success) {
         toast({
           title: '❌ User already exists',
           description: 'Please use a different email.',
         });
-        setLoading(false);
         return;
       }
 
-      const token = generateToken(newUser);
-      document.cookie = `token=${token}; path=/;`; // Store token in cookies
-      router.push('/login'); // Redirect to login or dashboard after signup
+      // Automatically log in after successful registration
+      await login(values.email, values.password);
+      
+      toast({
+        title: '✅ Success',
+        description: 'Account created successfully!',
+      });
+      router.push('/home');
+      
     } catch (error: any) {
       toast({
         title: '❌ Signup failed',
         description: error.message || 'An error occurred during signup.',
       });
+    } finally {
       setLoading(false);
     }
   }
@@ -83,7 +96,11 @@ export default function SignupForm() {
                   <FormItem className="flex-grow">
                     <FormLabel>Name</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter your name" {...field} />
+                      <Input 
+                        type="text"
+                        placeholder="Enter your name" 
+                        {...field} 
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -96,7 +113,11 @@ export default function SignupForm() {
                   <FormItem className="flex-grow">
                     <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter email" {...field} />
+                      <Input 
+                        type="email"
+                        placeholder="Enter email" 
+                        {...field} 
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -111,8 +132,8 @@ export default function SignupForm() {
                     <FormControl>
                       <Input
                         placeholder="Enter password"
-                        {...field}
                         type={showPassword ? 'text' : 'password'}
+                        {...field}
                         endIcon={showPassword ? Eye : EyeOff}
                         onEndIconClick={() => setShowPassword((prev) => !prev)}
                       />

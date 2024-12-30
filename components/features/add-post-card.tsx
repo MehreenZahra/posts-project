@@ -24,12 +24,8 @@ const AddPostSchema = z.object({
 
 type AddPostSchemaType = z.infer<typeof AddPostSchema>
 
-interface AddPostCardProps {
-  onAddPost: (title: string, content: string, author: { email: string; name: string }) => void;
-}
-
-export function AddPostCard({ onAddPost }: AddPostCardProps) {
-  const { user } = useContextAPI()
+export function AddPostCard() {
+  const { user, addPost } = useContextAPI()
   const { toast } = useToast()
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -47,7 +43,7 @@ export function AddPostCard({ onAddPost }: AddPostCardProps) {
 
     try {
       setIsSubmitting(true)
-      onAddPost(
+      addPost(
         values.title,
         values.content,
         { email: user.email, name: user.name }

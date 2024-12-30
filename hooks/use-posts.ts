@@ -6,6 +6,10 @@ interface Post {
   id: number;
   title: string;
   body: string;
+  author?: {
+    email: string;
+    name: string;
+  };
 }
 
 export function usePosts() {
@@ -19,7 +23,17 @@ export function usePosts() {
         const response = await fetch('https://jsonplaceholder.typicode.com/posts');
         if (!response.ok) throw new Error('Failed to fetch posts');
         const data = await response.json();
-        setPosts(data);
+        
+        // Add dummy author to each post
+        const postsWithAuthor = data.map((post: Post) => ({
+          ...post,
+          author: {
+            email: 'dummy@example.com',
+            name: 'JSONPlaceholder User'
+          }
+        }));
+        
+        setPosts(postsWithAuthor);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
       } finally {

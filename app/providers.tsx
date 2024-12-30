@@ -1,6 +1,6 @@
 'use client'
 
-import { AuthProvider } from '@/contexts/auth-context'
+import {  ContextProvider } from '@/contexts/auth-posts-context'
 import { ThemeProvider } from '@/components/theme-provider'
 import { useEffect, useState } from 'react'
 
@@ -23,7 +23,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       disableTransitionOnChange
       storageKey="theme-preference"
     >
-      <AuthProvider>{children}</AuthProvider>
+      <ContextProvider>{children}</ContextProvider>
     </ThemeProvider>
   )
 } 

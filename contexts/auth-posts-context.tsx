@@ -11,11 +11,15 @@ interface AuthContextType {
   register: (name: string, email: string, password: string) => Promise<boolean>;
   logout: () => void;
   isLoading: boolean;
+  deletePost: (postId: number) => void;
+  editPost: (postId: number, title: string, body: string) => void;
+  deleteComment: (postId: number, commentId: number) => void;
+  editComment: (postId: number, commentId: number, body: string) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+export function ContextProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -61,7 +65,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (email: string, password: string) => {
     try {
-      // Simulate API call
       const users = JSON.parse(localStorage.getItem('users') || '[]');
       const user = users.find((u: User) => u.email === email && u.password === password);
 
@@ -110,14 +113,50 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     deleteCookie('refreshToken');
   };
 
+  const deletePost = (postId: number) => {
+    const event = new CustomEvent('deletePost', { detail: postId });
+    window.dispatchEvent(event);
+  };
+
+  const editPost = (postId: number, title: string, body: string) => {
+    const event = new CustomEvent('editPost', { 
+      detail: { postId, title, body } 
+    });
+    window.dispatchEvent(event);
+  };
+
+  const deleteComment = (postId: number, commentId: number) => {
+    const event = new CustomEvent('deleteComment', { 
+      detail: { postId, commentId } 
+    });
+    window.dispatchEvent(event);
+  };
+
+  const editComment = (postId: number, commentId: number, body: string) => {
+    const event = new CustomEvent('editComment', { 
+      detail: { postId, commentId, body } 
+    });
+    window.dispatchEvent(event);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, isLoading }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      login, 
+      register, 
+      logout, 
+      isLoading,
+      deletePost,
+      editPost,
+      deleteComment,
+      editComment
+    }}>
       {children}
     </AuthContext.Provider>
   );
 }
 
-export const useAuth = () => {
+export const useContextAPI = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');

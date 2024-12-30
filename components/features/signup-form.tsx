@@ -13,7 +13,7 @@ import { Eye, EyeOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import LoaderButton from '../ui/loader-button';
 import Link from 'next/link';
-import { useAuth } from '@/contexts/auth-context';
+import {  useContextAPI } from '@/contexts/auth-posts-context';
 
 const signupSchema = z.object({
   name: z.string()
@@ -27,7 +27,7 @@ type SignupFormSchemaType = z.infer<typeof signupSchema>;
 
 export default function SignupForm() {
   const router = useRouter();
-  const { register, login } = useAuth();
+  const { register, login } = useContextAPI();
   const { toast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);

@@ -13,7 +13,7 @@ import LoaderButton from '../ui/loader-button';
 import { Eye, EyeOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
-import { useAuth } from '@/contexts/auth-context';
+import { useContextAPI } from '@/contexts/auth-posts-context';
 
 const LoginFormSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -24,7 +24,7 @@ type LoginFormSchemaType = z.infer<typeof LoginFormSchema>;
 
 export function LoginForm() {
   const router = useRouter();
-  const { login } = useAuth();
+  const { login } = useContextAPI();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();

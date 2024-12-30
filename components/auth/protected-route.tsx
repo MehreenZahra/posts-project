@@ -1,12 +1,12 @@
 'use client'
 
-import { useAuth } from '@/contexts/auth-context';
+import { useContextAPI } from '@/contexts/auth-posts-context';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import Loader from '../ui/loader';
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading } = useContextAPI();
   const router = useRouter();
 
   useEffect(() => {

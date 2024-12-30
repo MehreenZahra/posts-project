@@ -57,6 +57,10 @@ export function PostCard({ id, title, content, author }: PostCardProps) {
   const handleEdit = () => {
     editPost(id, editTitle, editContent)
     setIsEditing(false)
+    toast({
+      title: "✅ Post updated",
+      description: "Your post has been updated successfully.",
+    })
   }
 
   const handleDelete = () => {

@@ -1,20 +1,30 @@
 'use client'
 
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import { User } from '@/types/global';
 import { getCookie, setCookie, deleteCookie } from 'cookies-next';
 import { generateAccessToken, generateRefreshToken, parseToken } from '@/utils/token';
 
+interface Post {
+  id: number;
+  title: string;
+  body: string;
+  author?: {
+    email: string;
+    name: string;
+  };
+}
+
 interface AuthContextType {
   user: User | null;
+  isLoading: boolean;
+  posts: Post[];
   login: (email: string, password: string) => Promise<boolean>;
   register: (name: string, email: string, password: string) => Promise<boolean>;
   logout: () => void;
-  isLoading: boolean;
+  addPost: (title: string, content: string, author: { email: string; name: string }) => void;
   deletePost: (postId: number) => void;
   editPost: (postId: number, title: string, body: string) => void;
-  deleteComment: (postId: number, commentId: number) => void;
-  editComment: (postId: number, commentId: number, body: string) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -22,10 +32,11 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function ContextProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [posts, setPosts] = useState<Post[]>([]);
 
   useEffect(() => {
-    // Check authentication status on mount
     checkAuth();
+    fetchInitialPosts();
   }, []);
 
   const checkAuth = async () => {
@@ -34,7 +45,6 @@ export function ContextProvider({ children }: { children: React.ReactNode }) {
       const refreshToken = getCookie('refreshToken');
 
       if (!accessToken && refreshToken) {
-        // Try to refresh the access token
         await refreshAccessToken();
       } else if (accessToken) {
         const userData = parseToken(accessToken as string);
@@ -63,6 +73,7 @@ export function ContextProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  
   const login = async (email: string, password: string) => {
     try {
       const users = JSON.parse(localStorage.getItem('users') || '[]');
@@ -112,54 +123,72 @@ export function ContextProvider({ children }: { children: React.ReactNode }) {
     deleteCookie('accessToken');
     deleteCookie('refreshToken');
   };
+  const fetchInitialPosts = async () => {
+    try {
+      const response = await fetch('https://jsonplaceholder.typicode.com/posts');
+      if (!response.ok) throw new Error('Failed to fetch posts');
+      const data = await response.json();
+      
+      // Add dummy author to fetched posts
+      const postsWithAuthor = data.map((post: Post) => ({
+        ...post,
+        author: {
+          email: 'dummy@example.com',
+          name: 'JSONPlaceholder User'
+        }
+      }));
+      
+      setPosts(postsWithAuthor);
+    } catch (error) {
+      console.error('Error fetching posts:', error);
+    }
+  };
+
+  const addPost = (title: string, content: string, author: { email: string; name: string }) => {
+    const newPost = {
+      id: Date.now(),
+      title,
+      body: content,
+      author
+    };
+    setPosts(currentPosts => [newPost, ...currentPosts]);
+  };
 
   const deletePost = (postId: number) => {
-    const event = new CustomEvent('deletePost', { detail: postId });
-    window.dispatchEvent(event);
+    setPosts(currentPosts => currentPosts.filter(post => post.id !== postId));
   };
 
   const editPost = (postId: number, title: string, body: string) => {
-    const event = new CustomEvent('editPost', { 
-      detail: { postId, title, body } 
-    });
-    window.dispatchEvent(event);
-  };
-
-  const deleteComment = (postId: number, commentId: number) => {
-    const event = new CustomEvent('deleteComment', { 
-      detail: { postId, commentId } 
-    });
-    window.dispatchEvent(event);
-  };
-
-  const editComment = (postId: number, commentId: number, body: string) => {
-    const event = new CustomEvent('editComment', { 
-      detail: { postId, commentId, body } 
-    });
-    window.dispatchEvent(event);
+    setPosts(currentPosts => 
+      currentPosts.map(post => 
+        post.id === postId 
+          ? { ...post, title, body }
+          : post
+      )
+    );
   };
 
   return (
-    <AuthContext.Provider value={{ 
-      user, 
-      login, 
-      register, 
-      logout, 
+    <AuthContext.Provider value={{
+      user,
       isLoading,
+      posts,
+      login,
+      register,
+      logout,
+      addPost,
       deletePost,
       editPost,
-      deleteComment,
-      editComment
     }}>
       {children}
     </AuthContext.Provider>
   );
 }
 
-export const useContextAPI = () => {
+export function useContextAPI() {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error('useContextAPI must be used within an AuthProvider');
   }
   return context;
-}; 
+} 

@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { Avatar, AvatarFallback } from '../ui/avatar'
-import { Skeleton } from '../ui/skeleton'
 import { Button } from '../ui/button'
 import { Textarea } from '../ui/textarea'
 import { Send, MoreVertical, Pencil, Trash2 } from 'lucide-react'
@@ -13,7 +12,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { useToast } from '@/hooks/use-toast'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,6 +22,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { useToast } from '@/hooks/use-toast'
+import { Skeleton } from '../ui/skeleton'
 
 interface Comment {
   id: number
@@ -38,7 +38,7 @@ interface CommentsProps {
 }
 
 export function Comments({ postId }: CommentsProps) {
-  const { user, deleteComment, editComment } = useContextAPI()
+  const { user } = useContextAPI()
   const [comments, setComments] = useState<Comment[]>([])
   const [loading, setLoading] = useState(true)
   const [newComment, setNewComment] = useState('')
@@ -51,32 +51,6 @@ export function Comments({ postId }: CommentsProps) {
     fetchComments()
   }, [postId])
 
-  useEffect(() => {
-    const handleDeleteComment = (e: CustomEvent<{ postId: number; commentId: number }>) => {
-      if (e.detail.postId === postId) {
-        setComments(comments.filter(comment => comment.id !== e.detail.commentId))
-      }
-    }
-
-    const handleEditComment = (e: CustomEvent<{ postId: number; commentId: number; body: string }>) => {
-      if (e.detail.postId === postId) {
-        setComments(comments.map(comment => 
-          comment.id === e.detail.commentId 
-            ? { ...comment, body: e.detail.body }
-            : comment
-        ))
-      }
-    }
-
-    window.addEventListener('deleteComment', handleDeleteComment as EventListener)
-    window.addEventListener('editComment', handleEditComment as EventListener)
-
-    return () => {
-      window.removeEventListener('deleteComment', handleDeleteComment as EventListener)
-      window.removeEventListener('editComment', handleEditComment as EventListener)
-    }
-  }, [postId, comments])
-
   const fetchComments = async () => {
     try {
       const response = await fetch(
@@ -84,9 +58,9 @@ export function Comments({ postId }: CommentsProps) {
       )
       const data = await response.json()
       setComments(data)
-      setLoading(false)
     } catch (error) {
       console.error('Error fetching comments:', error)
+    } finally {
       setLoading(false)
     }
   }
@@ -95,7 +69,7 @@ export function Comments({ postId }: CommentsProps) {
     e.preventDefault()
     if (!newComment.trim() || !user) return
 
-    const comment: Comment = {
+    const comment = {
       id: Date.now(),
       postId,
       email: user.email,
@@ -118,12 +92,16 @@ export function Comments({ postId }: CommentsProps) {
 
   const handleSaveEdit = (commentId: number) => {
     if (!editText.trim()) return
-    editComment(postId, commentId, editText)
+    setComments(comments.map(comment => 
+      comment.id === commentId 
+        ? { ...comment, body: editText }
+        : comment
+    ))
     setEditingComment(null)
   }
 
   const handleDelete = (commentId: number) => {
-    deleteComment(postId, commentId)
+    setComments(comments.filter(comment => comment.id !== commentId))
     setDeleteCommentId(null)
     toast({
       title: "✅ Comment deleted",
@@ -132,12 +110,10 @@ export function Comments({ postId }: CommentsProps) {
   }
 
   if (loading) {
-    return (
-      <div className="space-y-4">
-        <Skeleton className="h-20 w-full" />
-        <Skeleton className="h-20 w-full" />
-      </div>
-    )
+    return <div className="space-y-4">
+        <Skeleton className='h-20 w-full'/>
+        <Skeleton className='h-20 w-full'/>
+    </div>
   }
 
   return (
@@ -154,79 +130,86 @@ export function Comments({ postId }: CommentsProps) {
             <Send className="h-4 w-4" />
           </Button>
         </form>
+
         <div className="space-y-4">
-          {comments.map((comment) => (
-            <div
-              key={comment.id}
-              className="flex gap-3 rounded-lg border bg-card p-4 text-card-foreground shadow-sm"
-            >
-              <Avatar className="h-8 w-8">
-                <AvatarFallback>
-                  {comment.name[0].toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1 space-y-1">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium leading-none">
-                      {comment.name}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {comment.email}
-                    </p>
+          {comments.length > 0 ? (
+            comments.map((comment) => (
+              <div
+                key={comment.id}
+                className="flex gap-3 rounded-lg border bg-card p-4 text-card-foreground shadow-sm"
+              >
+                <Avatar className="h-8 w-8">
+                  <AvatarFallback>
+                    {comment.name[0].toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 space-y-1 ">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium leading-none">
+                        {comment.name} 
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {comment.email}
+                      </p>
+                    </div>
+                    {user?.email === comment.email && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm">
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => handleStartEdit(comment)}>
+                            <Pencil className="mr-2 h-4 w-4" />
+                            Edit
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            onClick={() => setDeleteCommentId(comment.id)}
+                            className="cursor-pointer font-semibold text-destructive hover:text-destructive-foreground dark:hover:text-white"
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
                   </div>
-                  {user?.email === comment.email && (
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm">
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => handleStartEdit(comment)}>
-                          <Pencil className="mr-2 h-4 w-4" />
-                          Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuItem 
-                          onClick={() => setDeleteCommentId(comment.id)}
-                          className="cursor-pointer font-semibold text-destructive hover:text-destructive-foreground dark:hover:text-white"
+                  {editingComment === comment.id ? (
+                    <div className="mt-2 space-y-2">
+                      <Textarea
+                        value={editText}
+                        onChange={(e) => setEditText(e.target.value)}
+                        className="min-h-[60px]"
+                      />
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setEditingComment(null)}
                         >
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                          Cancel
+                        </Button>
+                        <Button
+                          size="sm"
+                          onClick={() => handleSaveEdit(comment.id)}
+                        >
+                          Save
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">{comment.body}</p>
                   )}
                 </div>
-                {editingComment === comment.id ? (
-                  <div className="mt-2 space-y-2">
-                    <Textarea
-                      value={editText}
-                      onChange={(e) => setEditText(e.target.value)}
-                      className="min-h-[60px]"
-                    />
-                    <div className="flex justify-end gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => setEditingComment(null)}
-                      >
-                        Cancel
-                      </Button>
-                      <Button
-                        size="sm"
-                        onClick={() => handleSaveEdit(comment.id)}
-                      >
-                        Save
-                      </Button>
-                    </div>
-                  </div>
-                ) : (
-                  <p className="text-sm text-muted-foreground">{comment.body}</p>
-                )}
               </div>
+            ))
+          ) : (
+            <div className="text-center py-4 text-muted-foreground">
+              No comments yet. Be the first to comment!
             </div>
-          ))}
+          )}
         </div>
       </div>
 

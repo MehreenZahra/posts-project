@@ -19,7 +19,7 @@ export function generateRefreshToken(user: User): string {
     id: user.id,
     email: user.email,
     name: user.name,
-    exp: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60, // 7 days
+    exp: Math.floor(Date.now() / 1000) +  24 * 60 * 60, // 1 day
   };
   return btoa(JSON.stringify(payload));
 }

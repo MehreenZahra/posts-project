@@ -1,25 +1,14 @@
 import { User } from '@/types/global';
 
-export function generateAccessToken(user: User): string {
-  if (!user) throw new Error('User is required');
-  
-  const payload = {
-    id: user.id,
-    email: user.email,
-    name: user.name,
-    exp: Math.floor(Date.now() / 1000) + 300, // 5 minutes
-  };
-  return btoa(JSON.stringify(payload));
-}
 
-export function generateRefreshToken(user: User): string {
+export function generateToken(user: User, refresh: boolean): string {
   if (!user) throw new Error('User is required');
   
   const payload = {
     id: user.id,
     email: user.email,
     name: user.name,
-    exp: Math.floor(Date.now() / 1000) +  24 * 60 * 60, // 1 day
+    exp: `${refresh} ? 'Math.floor(Date.now() / 1000) + 300, // 5 minutes' : 'Math.floor(Date.now() / 1000) + 60 * 60, // 1 hour'`,
   };
   return btoa(JSON.stringify(payload));
 }

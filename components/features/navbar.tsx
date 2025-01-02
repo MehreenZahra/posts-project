@@ -1,9 +1,15 @@
 'use client'
+
+import { useState } from 'react'
 import { useRouter } from 'next/navigation';
+import { LogOut, User as UserIcon, Home } from 'lucide-react';
+
+import { NavbarProps } from '@/types/global';
+import { useToast } from '@/hooks/use-toast'
+import { useAuth } from '@/contexts/auth-context';
+
 import { ModeToggle } from '../ui/theme-toggle';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { NavbarProps } from '@/types/global';
-import {  useContextAPI } from '@/contexts/auth-posts-context';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,9 +18,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { LogOut, User as UserIcon, Home } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast'
-import { useState } from 'react'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,7 +33,7 @@ import {
 
 export default function Navbar({ user }: NavbarProps) {
   const router = useRouter();
-  const { logout } = useContextAPI();
+  const { logout } = useAuth();
   const userName = user ? user.name : null;
   const userAvatar = user ? user.avatar : null;
   const [showLogoutAlert, setShowLogoutAlert] = useState(false)

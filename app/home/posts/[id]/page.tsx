@@ -13,10 +13,13 @@ export default function PostPage() {
     ? parseInt(params.id[0])
     : parseInt(params.id || "0");
   const post = posts.find((p) => p.id === postId);
+  
   if (!post) {
     return (
       <main className="container mx-auto max-w-2xl px-4 py-6">
-        <div className="text-center">Post not found</div>
+        <h1 className="text-2xl font-semibold text-center">
+          Post not found
+        </h1>
       </main>
     );
   }

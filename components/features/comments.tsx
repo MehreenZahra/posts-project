@@ -26,6 +26,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
 interface CommentsProps {
@@ -125,129 +126,131 @@ export function Comments({ postId }: CommentsProps) {
 
   return (
     <>
-      <div className="space-y-4">
-        <form onSubmit={handleAddComment} className="flex gap-2">
-          <Textarea
-            placeholder="Write a comment..."
-            value={newComment}
-            onChange={(e) => setNewComment(e.target.value)}
-            className="min-h-[60px]"
-          />
-          <Button type="submit" size="icon" disabled={!newComment.trim()}>
-            <Send className="h-4 w-4" />
-          </Button>
-        </form>
-
+      <div>
         <div className="space-y-4">
-          {postComments.length > 0 ? (
-            postComments.map((comment) => (
-              <div
-                key={comment.id}
-                className="flex gap-3 rounded-lg border bg-card p-4 text-card-foreground shadow-sm"
-              >
-                <Avatar className="h-8 w-8">
-                  <AvatarFallback>
-                    {comment.author.name[0].toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1 space-y-1">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium leading-none">
-                        {comment.author.name}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {comment.author.email}
-                      </p>
+          <form onSubmit={handleAddComment} className="flex gap-2">
+            <Textarea
+              placeholder="Write a comment..."
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              className="min-h-[60px]"
+            />
+            <Button type="submit" size="icon" disabled={!newComment.trim()}>
+              <Send className="h-4 w-4" />
+            </Button>
+          </form>
+
+          <div className="space-y-4">
+            {postComments.length > 0 ? (
+              postComments.map((comment) => (
+                <div
+                  key={comment.id}
+                  className="flex gap-3 rounded-lg border bg-card p-4 text-card-foreground shadow-sm"
+                >
+                  <Avatar className="h-8 w-8">
+                    <AvatarFallback>
+                      {comment.author.name[0].toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 space-y-1">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium leading-none">
+                          {comment.author.name}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {comment.author.email}
+                        </p>
+                      </div>
+                      {user?.email === comment.author.email && (
+                        <AlertDialog>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm">
+                                <MoreVertical className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem
+                                onClick={() => handleStartEdit(comment)}
+                              >
+                                <Pencil className="mr-2 h-4 w-4" />
+                                Edit
+                              </DropdownMenuItem>
+                              <AlertDialogTrigger asChild>
+                                <DropdownMenuItem
+                                  onClick={() => setDeleteCommentId(comment.id)}
+                                  className="cursor-pointer font-semibold text-destructive hover:text-destructive-foreground dark:hover:text-white"
+                                >
+                                  <Trash2 className="mr-2 h-4 w-4" />
+                                  Delete
+                                </DropdownMenuItem>
+                              </AlertDialogTrigger>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>
+                                Delete Comment
+                              </AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Are you sure you want to delete this comment?
+                                This action cannot be undone.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => deleteCommentId && handleDelete(comment.id)}
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              >
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      )}
                     </div>
-                    {user?.email === comment.author.email && (
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm">
-                            <MoreVertical className="h-4 w-4" />
+                    {editingComment === comment.id ? (
+                      <div className="mt-2 space-y-2">
+                        <Textarea
+                          value={editText}
+                          onChange={(e) => setEditText(e.target.value)}
+                          className="min-h-[60px]"
+                        />
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setEditingComment(null)}
+                          >
+                            Cancel
                           </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem
-                            onClick={() => handleStartEdit(comment)}
+                          <Button
+                            size="sm"
+                            onClick={() => handleSaveEdit(comment.id)}
+                            disabled={!editText.trim()}
                           >
-                            <Pencil className="mr-2 h-4 w-4" />
-                            Edit
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => setDeleteCommentId(comment.id)}
-                            className="cursor-pointer font-semibold text-destructive hover:text-destructive-foreground dark:hover:text-white"
-                          >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                            Save
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">
+                        {comment.body}
+                      </p>
                     )}
                   </div>
-                  {editingComment === comment.id ? (
-                    <div className="mt-2 space-y-2">
-                      <Textarea
-                        value={editText}
-                        onChange={(e) => setEditText(e.target.value)}
-                        className="min-h-[60px]"
-                      />
-                      <div className="flex justify-end gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => setEditingComment(null)}
-                        >
-                          Cancel
-                        </Button>
-                        <Button
-                          size="sm"
-                          onClick={() => handleSaveEdit(comment.id)}
-                          disabled={!editText.trim()}
-                        >
-                          Save
-                        </Button>
-                      </div>
-                    </div>
-                  ) : (
-                    <p className="text-sm text-muted-foreground">
-                      {comment.body}
-                    </p>
-                  )}
                 </div>
+              ))
+            ) : (
+              <div className="text-center py-4 text-muted-foreground">
+                No comments yet. Be the first to comment!
               </div>
-            ))
-          ) : (
-            <div className="text-center py-4 text-muted-foreground">
-              No comments yet. Be the first to comment!
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
-
-      <AlertDialog
-        open={deleteCommentId !== null}
-        onOpenChange={() => setDeleteCommentId(null)}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Comment</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete this comment? This action cannot
-              be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => deleteCommentId && handleDelete(deleteCommentId)}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </>
   );
 }

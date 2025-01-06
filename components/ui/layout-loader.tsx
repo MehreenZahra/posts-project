@@ -1,7 +1,7 @@
 
 import { Skeleton } from "@/components/ui/skeleton";
 
-export default function Loading() {
+export default function LayoutLoader() {
   return (
     <main className="container mx-auto max-w-2xl px-4 py-6">
       <div className="min-h-screen bg-background">

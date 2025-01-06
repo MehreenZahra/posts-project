@@ -184,7 +184,7 @@ export function PostCard({
             </span>
           </Button>
           {!isDetailView && (
-            <Link href={`/home/posts/${id}`}>
+            <Link href={`/posts/${id}`}>
               <Button
                 variant="ghost"
                 size="sm"

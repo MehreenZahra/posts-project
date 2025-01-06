@@ -125,7 +125,7 @@ export function Comments({ postId }: CommentsProps) {
   }
 
   return (
-    <>
+    // <>
       <div>
         <div className="space-y-4">
           <form onSubmit={handleAddComment} className="flex gap-2">
@@ -251,6 +251,6 @@ export function Comments({ postId }: CommentsProps) {
           </div>
         </div>
       </div>
-    </>
+    // </>
   );
 }

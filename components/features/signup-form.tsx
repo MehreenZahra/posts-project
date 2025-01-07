@@ -119,6 +119,7 @@ export default function SignupForm() {
                     <FormControl>
                       <Input
                         type="text"
+                        aria-label="name"
                         placeholder="Enter your name"
                         {...field}
                       />
@@ -136,6 +137,7 @@ export default function SignupForm() {
                     <FormControl>
                       <Input
                         type="email"
+                        aria-label="email"
                         placeholder="Enter email"
                         {...field}
                       />
@@ -153,6 +155,7 @@ export default function SignupForm() {
                     <FormControl>
                       <Input
                         placeholder="Enter password"
+                        aria-label="password"
                         type={showPassword ? "text" : "password"}
                         {...field}
                         endIcon={showPassword ? Eye : EyeOff}

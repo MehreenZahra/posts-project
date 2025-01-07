@@ -94,7 +94,11 @@ export function AddPostCard() {
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
-                    <Input placeholder="Post title" {...field} />
+                    <Input 
+                      placeholder="Post title" 
+                      aria-label="title"
+                      {...field} 
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -108,6 +112,7 @@ export function AddPostCard() {
                   <FormControl>
                     <Textarea
                       placeholder="Post content"
+                      aria-label="content"
                       className="min-h-[100px]"
                       {...field}
                     />

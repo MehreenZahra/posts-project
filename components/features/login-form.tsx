@@ -89,6 +89,7 @@ export function LoginForm() {
                     <FormControl>
                       <Input 
                         type="email"
+                        aria-label="email"
                         placeholder="Enter email" 
                         {...field} 
                       />
@@ -106,6 +107,7 @@ export function LoginForm() {
                     <FormControl>
                       <Input
                         placeholder="Enter password"
+                        aria-label="password"
                         type={showPassword ? 'text' : 'password'}
                         {...field}
                         endIcon={showPassword ? Eye : EyeOff}

@@ -1,18 +1,35 @@
 'use client'
 
-import { createContext, useContext } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 
-import { useLocalStorage } from '@/hooks/use-local-storage';
 import { api } from '@/services/api';
 import { useToast } from '@/hooks/use-toast';
 import { Comment, Author, CommentsContextType } from '@/types/global';
+import { getLocalItem, setLocalItem } from '@/utils/localStorage';
 
 
 const CommentsContext = createContext<CommentsContextType | undefined>(undefined);
 
 export function CommentsProvider({ children }: { children: React.ReactNode }) {
-  const [comments, setComments] = useLocalStorage<{ [postId: number]: Comment[] }>('comments', {});
+  const [comments, setComments] = useState<{ [postId: number]: Comment[] }>({});
   const { toast } = useToast();
+
+  useEffect(() => {
+   try {
+    const initialComments = getLocalItem('comments');
+    if (initialComments) {
+      setComments(initialComments)
+    }
+   } catch (error) {
+    console.error(error)
+   }
+  }, []);
+
+  useEffect(() => {
+   setLocalItem('comments', comments)
+  }, [comments]);
+  
+  
 
   const fetchComments = async (postId: number) => {
     if (comments[postId]) return;

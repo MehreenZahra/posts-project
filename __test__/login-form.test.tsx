@@ -10,6 +10,11 @@ vi.mock('next/navigation', () => ({
       push: vi.fn(),
     }),
   }))
+
+  const mockLogin = vi.fn((email, password) => {
+    return Promise.resolve({ email, password })
+  })
+  
 describe('LoginForm',()=>{
      const renderLoginForm = () =>{
         render(

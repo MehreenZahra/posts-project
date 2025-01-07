@@ -1,46 +1,57 @@
 'use client'
-import { createContext, useContext, useEffect } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 
 import { useToast } from '@/hooks/use-toast';
-import { useLocalStorage } from '@/hooks/use-local-storage';
 
 import { api } from '@/services/api';
 import { Post, Author, PostsContextType } from '@/types/global';
+import { getLocalItem, setLocalItem } from '@/utils/localStorage';
 
 
 
 const PostsContext = createContext<PostsContextType | undefined>(undefined);
 
 export function PostsProvider({ children }: { children: React.ReactNode }) {
-  const [posts, setPosts] = useLocalStorage<Post[]>('posts', []);
+  const [posts, setPosts] = useState<Post[]>([]);
   const { toast } = useToast();
 
-  // Fetch initial posts only once when the component mounts
   useEffect(() => {
-    const loadPosts = async () => {
-      // Only fetch if we don't have any posts in local storage
-      if (posts.length > 0) {
-        return;
+    try {
+      const initialPosts = getLocalItem('posts');
+      if (initialPosts?.length > 0) {
+        setPosts(initialPosts);
+      } else {
+        loadPosts();
       }
-        try {
-        const response = await api.fetchPosts();
-        const initialPosts = response.map((post: Post) => ({
-          ...post,
-          likes: post.likes ?? 0,
-          likedBy: post.likedBy ?? []
-        }));
-          setPosts(initialPosts);
-        } catch (error) {
-          console.error('Error loading posts:', error);
-          toast({ title: 'Error loading posts',
-            description: 'Failed to load posts',
-            variant: 'destructive',
-           });
-      }
-    };
+    } catch (error) {
+      console.error(error);
+    }
+  }, []);
 
-    loadPosts();
-  }, [ setPosts, toast]);
+  useEffect(() => {
+   setLocalItem('posts', posts)
+  }, [posts])
+  
+  const loadPosts = async () => {
+    if (posts.length > 0) {
+      return;
+    }
+      try {
+      const response = await api.fetchPosts();
+      const initialPosts = response.map((post: Post) => ({
+        ...post,
+        likes: post.likes ?? 0,
+        likedBy: post.likedBy ?? []
+      }));
+        setPosts(initialPosts);
+      } catch (error) {
+        console.error('Error loading posts:', error);
+        toast({ title: 'Error loading posts',
+          description: 'Failed to load posts',
+          variant: 'destructive',
+         });
+    }
+  };
 
   const addPost = async (title: string, content: string, author: Author) => {
         try {

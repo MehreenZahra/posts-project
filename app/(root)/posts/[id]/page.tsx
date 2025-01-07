@@ -4,7 +4,6 @@ import { useParams } from "next/navigation";
 
 import { usePosts } from "@/contexts/posts-context";
 import { PostCard } from "@/components/features/post-card";
-
 export default function PostPage() {
   const params = useParams();
   const { posts } = usePosts();
@@ -22,8 +21,7 @@ export default function PostPage() {
         </h1>
       </main>
     );
-  }
-
+  };
   return (
     <main className="container mx-auto max-w-2xl px-4 py-6">
       <div className="space-y-6">

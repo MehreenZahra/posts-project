@@ -50,6 +50,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import LayoutLoader from "../ui/layout-loader";
 
 
 
@@ -106,6 +107,7 @@ export function PostCard({
   };
 
   const isAuthor = author?.email === user?.email;
+  
 
   return (
     <Card className="overflow-hidden">
@@ -162,7 +164,7 @@ export function PostCard({
             className={cn(
               "transition-all duration-200 hover:scale-105 active:scale-95 hover:bg-gray-100 dark:hover:bg-gray-800",
               liked &&
-                "bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 dark:bg-blue-950 dark:hover:bg-blue-900"
+                "bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 dark:bg-blue-950 dark:text-blue-400 dark:hover:bg-blue-900"
             )}
           >
             <ThumbsUp className="mr-2 h-4 w-4 transition-transform hover:scale-110" />

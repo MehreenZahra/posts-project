@@ -17,12 +17,12 @@ export function PostsProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     try {
-      const initialPosts = getLocalItem('posts');
-      if (initialPosts?.length > 0) {
-        setPosts(initialPosts);
-      } else {
-        loadPosts();
+      const localPosts = getLocalItem('posts');
+      if (localPosts?.length > 0) {
+        setPosts(localPosts);
       }
+      // Load posts from API regardless of local storage
+      loadPosts();
     } catch (error) {
       console.error(error);
     }
@@ -33,23 +33,34 @@ export function PostsProvider({ children }: { children: React.ReactNode }) {
   }, [posts])
   
   const loadPosts = async () => {
-    if (posts.length > 0) {
-      return;
-    }
-      try {
+    try {
       const response = await api.fetchPosts();
-      const initialPosts = response.map((post: Post) => ({
+      const apiPosts = response.map((post: Post) => ({
         ...post,
         likes: post.likes ?? 0,
         likedBy: post.likedBy ?? []
       }));
-        setPosts(initialPosts);
-      } catch (error) {
-        console.error('Error loading posts:', error);
-        toast({ title: 'Error loading posts',
-          description: 'Failed to load posts',
-          variant: 'destructive',
-         });
+
+      // Merge API posts with existing local posts
+      setPosts(prevPosts => {
+        const mergedPosts = [...prevPosts];
+        
+        apiPosts.forEach((apiPost: Post) => {
+          const existingPostIndex = mergedPosts.findIndex(p => p.id === apiPost.id);
+          if (existingPostIndex === -1) {
+            mergedPosts.push(apiPost);
+          }
+        });
+
+        return mergedPosts;
+      });
+    } catch (error) {
+      console.error('Error loading posts:', error);
+      toast({
+        title: 'Error loading posts',
+        description: 'Failed to load posts',
+        variant: 'destructive',
+      });
     }
   };
 

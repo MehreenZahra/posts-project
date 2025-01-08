@@ -125,7 +125,7 @@ export function PostCard({
         {isAuthor && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm">
+              <Button variant="ghost" size="sm" data-testid="more-button">
                 <MoreVertical className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
@@ -214,6 +214,7 @@ export function PostCard({
             <div className="space-y-2">
               <Input
                 placeholder="Post title"
+                aria-label="edit title"
                 value={editTitle}
                 onChange={(e) => setEditTitle(e.target.value)}
               />
@@ -221,6 +222,7 @@ export function PostCard({
             <div className="space-y-2">
               <Textarea
                 placeholder="Post content"
+                aria-label="edit content"
                 value={editContent}
                 onChange={(e) => setEditContent(e.target.value)}
               />
@@ -249,6 +251,7 @@ export function PostCard({
             <AlertDialogAction
               onClick={handleDelete}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              data-testid="delete-post-button"
             >
               Delete
             </AlertDialogAction>

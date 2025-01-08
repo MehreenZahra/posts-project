@@ -61,7 +61,7 @@ export default function Navbar({ user }: NavbarProps) {
             <ModeToggle />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-3 rounded-full border border-border bg-background px-2 py-1 transition-all duration-200 hover:bg-accent hover:scale-105 active:scale-95">
+                <button data-testid="user-button" className="flex items-center gap-3 rounded-full border border-border bg-background px-2 py-1 transition-all duration-200 hover:bg-accent hover:scale-105 active:scale-95">
                   <span className="hidden text-sm font-medium md:inline-block">
                     {userName || 'Guest'}
                   </span>

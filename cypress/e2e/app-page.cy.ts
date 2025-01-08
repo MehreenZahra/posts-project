@@ -11,12 +11,4 @@ describe('App page', () => {
     cy.get('a[href="/login"]').click();
     cy.url().should('include', '/login');
   });
-  // it('should allow user to register',()=>{
-  //   cy.visit('http://localhost:3000/signup');
-  //   cy.get('input[name="name"]').type('testUser');
-  //   cy.get('input[name="email"]').type('testUser@gmail.com');
-  //   cy.get('input[name="password"]').type('testUser123');
-  //   cy.get('button[type="submit"]').click();
-  //   cy.url().should('include', '/home');
-  // })
 })

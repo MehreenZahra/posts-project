@@ -131,11 +131,12 @@ export function Comments({ postId }: CommentsProps) {
           <form onSubmit={handleAddComment} className="flex gap-2">
             <Textarea
               placeholder="Write a comment..."
+              aria-label="Add Comment"
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
               className="min-h-[60px]"
             />
-            <Button type="submit" size="icon" disabled={!newComment.trim()}>
+            <Button type="submit" size="icon" disabled={!newComment.trim()} data-testid="add-comment-button">
               <Send className="h-4 w-4" />
             </Button>
           </form>
@@ -166,7 +167,7 @@ export function Comments({ postId }: CommentsProps) {
                         <AlertDialog>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm">
+                              <Button variant="ghost" size="sm" data-testid="comment-options-button">
                                 <MoreVertical className="h-4 w-4" />
                               </Button>
                             </DropdownMenuTrigger>
@@ -203,6 +204,7 @@ export function Comments({ postId }: CommentsProps) {
                               <AlertDialogAction
                                 onClick={() => deleteCommentId && handleDelete(comment.id)}
                                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                data-testid="delete-comment-button"
                               >
                                 Delete
                               </AlertDialogAction>
@@ -215,6 +217,7 @@ export function Comments({ postId }: CommentsProps) {
                       <div className="mt-2 space-y-2">
                         <Textarea
                           value={editText}
+                          aria-label="Edit Comment"
                           onChange={(e) => setEditText(e.target.value)}
                           className="min-h-[60px]"
                         />
